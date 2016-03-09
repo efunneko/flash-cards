@@ -2,42 +2,97 @@
 
 (function(ctx, $ ){
 
-    ctx.maxWord = 500;
+    var maxWord = 500;
+    var state   = {currWord: "",
+                   prevWords: [],
+                   nextWords: []};
 
-    ctx.start = function() {
-        console.log("Have words:", ctx.words);
+    function start() {
+        var tr = $("#main").$table().$tr();
 
-        $("#main").$div({id: "word", 'class': "word"}).bind("click", ctx.newWord);
-        $(document).bind("click", ctx.newWord);
-        ctx.newWord();
+        var prev = tr.$td({'class':'prev-arrow'});
+        var mid  = tr.$td({'class':'middle'});
+        var next = tr.$td({'class':'next-arrow'});
+
+        prev.$img({src: 'img/backward.png', 'class': 'arrow'});
+        mid.$div({id: "word", 'class': "word"});
+        next.$img({src: 'img/forward.png', 'class': 'arrow'});
+
+        prev.bind("click", prevWord);
+        next.bind("click", nextWord);
+
+        nextWord();
 
     };
 
-    ctx.newWord = function() {
-        var word = ctx.words[Math.floor(Math.random()*ctx.maxWord)];
+    function prevWord() {
+        if (state.prevWords.length > 0) {
+            state.nextWords.push(state.currWord);
+            state.currWord = state.prevWords.pop();
+            displayWord();
+        }
+    }
+
+    function nextWord() {
+        if (state.currWord != "") {
+            state.prevWords.push(state.currWord);
+        }
+        if (state.nextWords.length == 0) {
+            state.currWord = ctx.words[Math.floor(Math.random()*maxWord)];
+        }
+        else {
+            state.currWord = state.nextWords.pop();
+        }
+        displayWord();
+    }
+
+    function displayWord() {
         
-        
+        var word = state.currWord;
+
         $("#word").html("");
         
+        var card = $("#word").$div({'class': 'card'});
+
         var pieces = word.split(/-/);
         
         var count = 0;
         $.each(pieces, function(i, piece) {
             var className = "word-piece-" + (count++ % 2);
-            $("#word").$span(piece, {'class': className});
+            card.$span(piece, {'class': className});
         });
-        $("#word").fitText(0.5);
-        console.log(word);
+
+        resize();
     };
 
     // Initialize 
-    ctx.init = function (options) {
+    function init(options) {
+
+        // Figure out the font size for the 
+
         $.createHtml("configure", {installParentFunctions: true});
-        this.start();
+        start();
+        $(window).resize(resize);
     };
-    
+
+    // Determine the appropriate sizing for the display
+    function resize() {
+        var test = $('body').$span("international");
+        test.css('font-size', '30px');
+        var size = $(window).width()/test.width() * 0.75 * 30;
+        $("#word").css('font-size', size + "px");
+        test.remove();
+
+        // Resize the arrow icons
+        size = $(".prev-arrow").width() * 0.5;
+        $('.arrow').width(size);
+        $('.arrow').height(size);
+
+    };
+   
+
     $('document').ready(function() {
-        ctx.init({
+        init({
             id: "main"
         });
     });
