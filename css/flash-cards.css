@@ -1,0 +1,14 @@
+.word {
+    text-align: center;
+    display: block;
+    margin: 5% auto 5%;
+
+}
+
+.word-piece-0 {
+    color: #cc0000;
+}
+
+.word-piece-1 {
+    color: #0000cc;
+}
